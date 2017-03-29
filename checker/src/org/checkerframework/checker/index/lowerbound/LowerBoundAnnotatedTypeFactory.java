@@ -1,7 +1,7 @@
 package org.checkerframework.checker.index.lowerbound;
 
 import static org.checkerframework.checker.index.IndexUtil.getExactValue;
-import static org.checkerframework.checker.index.IndexUtil.getPossibleValues;
+import static org.checkerframework.checker.index.IndexUtil.getMinAndMaxValues;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
@@ -12,7 +12,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -162,16 +161,13 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Returns the type in the lower bound hierarchy that a Value Checker type corresponds to. */
     private AnnotationMirror getLowerBoundAnnotationFromValueType(AnnotatedTypeMirror valueType) {
-        List<Long> possibleValues = getPossibleValues(valueType);
+        List<Long> possibleValues = getMinAndMaxValues(valueType);
         // possibleValues is null if the Value Checker does not have any estimate.
         if (possibleValues == null) {
             return UNKNOWN;
         }
-        if (possibleValues.size() == 0) {
-            return BOTTOM;
-        }
         // The annotation of the whole list is the min of the list.
-        long lvalMin = Collections.min(possibleValues);
+        long lvalMin = possibleValues.get(0);
         // Turn it into an integer.
         int valMin = (int) Math.max(Math.min(Integer.MAX_VALUE, lvalMin), Integer.MIN_VALUE);
         return anmFromVal(valMin);

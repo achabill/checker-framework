@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.MinLen;
 import org.checkerframework.checker.index.qual.MinLenBottom;
 import org.checkerframework.checker.index.qual.NonNegative;
@@ -284,6 +285,11 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         type.addAnnotation(minLenAnno);
                     } else if (arrayType.hasAnnotation(PolyMinLen.class)) {
                         type.addAnnotation(POLY);
+                    }
+                } else {
+                    Long minValue = IndexUtil.getMinValue(dimExp, getValueAnnotatedTypeFactory());
+                    if (minValue != null && minValue.intValue() > 0) {
+                        type.addAnnotation(createMinLen(minValue.intValue()));
                     }
                 }
             }

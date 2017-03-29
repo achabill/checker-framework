@@ -1,13 +1,16 @@
 package org.checkerframework.checker.index;
 
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.qual.MinLen;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -29,12 +32,28 @@ public class IndexUtil {
     }
 
     /**
-     * Get the list of possible values from an AnnotatedTypeMirror containing an IntVal. Empty list
-     * means no possible values (dead code). Returns null if the AnnotatedTypeMirror doesn't contain
-     * an IntVal.
+     * Finds the min and max values of an integer given its type in the Constant Value Checker's
+     * type system. If there is no IntVal or IntRange annotation, returns null. Otherwise, the first
+     * element in the resulting list is the min, and the last is the max.
      */
-    public static List<Long> getPossibleValues(AnnotatedTypeMirror valueType) {
-        return ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
+    public static List<Long> getMinAndMaxValues(AnnotatedTypeMirror valueType) {
+        AnnotationMirror intVal = valueType.getAnnotation(IntVal.class);
+        List<Long> result = new ArrayList<>(2);
+        if (intVal != null) {
+            List<Long> intVals = ValueAnnotatedTypeFactory.getIntValues(intVal);
+            result.add(Collections.min(intVals));
+            result.add(Collections.max(intVals));
+        } else {
+            // Look for an IntRange annotation
+            AnnotationMirror intRange = valueType.getAnnotation(IntRange.class);
+            if (intRange == null) {
+                return null;
+            }
+            Range range = ValueAnnotatedTypeFactory.getIntRange(intRange);
+            result.add(range.from);
+            result.add(range.to);
+        }
+        return result;
     }
 
     /**
@@ -45,8 +64,8 @@ public class IndexUtil {
      */
     public static Long getExactValue(Tree tree, ValueAnnotatedTypeFactory factory) {
         AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
-        List<Long> possibleValues = getPossibleValues(valueType);
-        if (possibleValues != null && possibleValues.size() == 1) {
+        List<Long> possibleValues = getMinAndMaxValues(valueType);
+        if (possibleValues != null && possibleValues.get(0) == possibleValues.get(1)) {
             return possibleValues.get(0);
         } else {
             return null;
@@ -60,9 +79,9 @@ public class IndexUtil {
      */
     public static Long getMinValue(Tree tree, ValueAnnotatedTypeFactory factory) {
         AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
-        List<Long> possibleValues = getPossibleValues(valueType);
-        if (possibleValues != null && possibleValues.size() != 0) {
-            return Collections.min(possibleValues);
+        List<Long> possibleValues = getMinAndMaxValues(valueType);
+        if (possibleValues != null) {
+            return possibleValues.get(0);
         } else {
             return null;
         }
@@ -75,9 +94,9 @@ public class IndexUtil {
      */
     public static Long getMaxValue(Tree tree, ValueAnnotatedTypeFactory factory) {
         AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
-        List<Long> possibleValues = getPossibleValues(valueType);
-        if (possibleValues != null && possibleValues.size() != 0) {
-            return Collections.max(possibleValues);
+        List<Long> possibleValues = getMinAndMaxValues(valueType);
+        if (possibleValues != null) {
+            return possibleValues.get(1);
         } else {
             return null;
         }
