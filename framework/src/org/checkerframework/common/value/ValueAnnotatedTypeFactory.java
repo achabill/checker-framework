@@ -906,6 +906,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             type.replaceAnnotation(
                                     createNumberAnnotationMirror(new ArrayList<Number>(lengths)));
                             return null;
+                        } else {
+                            type.replaceAnnotation(createIntRangeAnnotation(0, Integer.MAX_VALUE));
+                            return null;
                         }
                     }
                 }

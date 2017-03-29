@@ -101,7 +101,11 @@ public class ValueTransfer extends CFTransfer {
         } else if (isIntRange(subNode, p)) {
             Range range = getIntRange(subNode, p);
             List<Long> longValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
-            values = NumberUtils.castNumbers(subNode.getType(), longValues);
+            if (longValues != null) {
+                values = NumberUtils.castNumbers(subNode.getType(), longValues);
+            } else {
+                values = null;
+            }
         } else {
             values = getNumericalValues(subNode, p);
         }

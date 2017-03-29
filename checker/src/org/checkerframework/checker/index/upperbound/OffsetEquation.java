@@ -278,8 +278,12 @@ public class OffsetEquation {
     private void addTerm(char operator, String term) {
         term = term.trim();
         if (isInt(term)) {
-            int literal = parseInt(term);
-            addInt(operator == '-' ? -1 * literal : literal);
+            long literal = parseInt(term);
+            if (literal > Integer.MAX_VALUE) {
+                literal = Integer.MAX_VALUE;
+            }
+            int intLiteral = (int) (operator == '-' ? -1 * literal : literal);
+            addInt(intLiteral);
             return;
         }
         if (operator == '-') {
@@ -383,11 +387,11 @@ public class OffsetEquation {
         return string.isEmpty() || string.matches("[-+]?[0-9]+");
     }
 
-    private static int parseInt(String intLiteral) {
+    private static long parseInt(String intLiteral) {
         if (intLiteral.isEmpty()) {
             return 0;
         }
-        return Integer.valueOf(intLiteral);
+        return Long.valueOf(intLiteral);
     }
 
     /** Returns the first index of a or b in string, or -1 if neither char is in string. */
