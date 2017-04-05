@@ -214,7 +214,7 @@ public class ValueTransfer extends CFTransfer {
         if (bottomValAnno != null) {
             return Range.NOTHING;
         }
-        return NumberUtils.castRange(subNode.getType(), range);
+        return range; //NumberUtils.castRange(subNode.getType(), range);
     }
 
     /** a helper function to determine if this node is annotated with @IntRange */

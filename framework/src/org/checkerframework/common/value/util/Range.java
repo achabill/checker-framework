@@ -324,6 +324,9 @@ public class Range {
      * @return the range resulting from dividing this range by the specified range
      */
     public Range divide(Range right) {
+
+        System.out.println("dividing " + this.toString() + " by " + right.toString());
+
         if (this.isNothing() || right.isNothing()) {
             return NOTHING;
         }
@@ -400,6 +403,9 @@ public class Range {
                 resultTo = Math.max(-from, to);
             }
         }
+
+        System.out.println("the result was " + new Range(resultFrom, resultTo));
+
         return new Range(resultFrom, resultTo);
     }
 

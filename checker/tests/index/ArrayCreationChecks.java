@@ -26,7 +26,6 @@ class ArrayCreationChecks {
         //:: error: (array.length.negative)
         int[] newArray = new int[x + y];
         @LTEqLengthOf("newArray") int i = x;
-        //:: error: (assignment.type.incompatible)
         @IndexOrHigh("newArray") int j = y;
     }
 

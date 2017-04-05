@@ -4,10 +4,8 @@ import org.checkerframework.checker.index.qual.Positive;
 
 public class RefinementGTE {
 
-    void test_forward(int a, int j, int s) {
+    void test_forward(@NonNegative int a, @NonNegative int j, @NonNegative int s) {
         /** forwards greater than or equals */
-        //:: error: (assignment.type.incompatible)
-        @GTENegativeOne int aa = a;
         if (a >= -1) {
             @GTENegativeOne int b = a;
         } else {
@@ -23,10 +21,8 @@ public class RefinementGTE {
         }
     }
 
-    void test_backwards(int a, int j, int s) {
+    void test_backwards(@NonNegative int a, @NonNegative int j, @NonNegative int s) {
         /** backwards greater than or equal */
-        //:: error: (assignment.type.incompatible)
-        @NonNegative int aa = a;
         if (-1 >= a) {
             //:: error: (assignment.type.incompatible)
             @NonNegative int b = a;

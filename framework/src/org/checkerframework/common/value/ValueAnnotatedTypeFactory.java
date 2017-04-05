@@ -122,7 +122,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         addAliasedAnnotation(
                 "org.checkerframework.checker.index.qual.NonNegative",
-                createIntRangeAnnotation(0, Integer.MAX_VALUE));
+                createIntRangeAnnotation(0, Long.MAX_VALUE));
+
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.Positive",
+                createIntRangeAnnotation(1, Long.MAX_VALUE));
+
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.GTENegativeOne",
+                createIntRangeAnnotation(-1, Long.MAX_VALUE));
 
         reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
         evalutator = new ReflectiveEvalutator(checker, this, reportEvalWarnings);
@@ -146,6 +154,20 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         return new ValueTransfer(analysis);
     }
+    /*
+    @Override
+    protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+        if (type.getUnderlyingType().getKind() == TypeKind.INT) {
+            type.replaceAnnotation(createIntRangeAnnotation(Range.INT_EVERYTHING));
+        }
+    }
+
+    @Override
+    public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+        if (type.getUnderlyingType().getKind() == TypeKind.INT) {
+            type.replaceAnnotation(createIntRangeAnnotation(Range.INT_EVERYTHING));
+        }
+    }*/
 
     /**
      * Creates an annotation of the given name with the given set of values.
