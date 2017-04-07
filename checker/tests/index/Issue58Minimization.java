@@ -1,10 +1,13 @@
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.*;
 
 class Issue58Minimization {
 
-    void test(@GTENegativeOne int x) {
+    void test(@GTENegativeOne int xf, @GTENegativeOne int x) {
         int z;
-        if ((z = x) != -1) {
+        @IntRange(from = -1, to = Integer.MAX_VALUE)
+        int q = xf;
+        if ((z = xf) != -1) {
             @NonNegative int y = z;
         }
         if ((z = x) != 1) {

@@ -186,7 +186,7 @@ public class ValueTransfer extends CFTransfer {
     }
 
     /** Get possible integer range from annotation. */
-    private Range getIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
+    private static Range getIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         Range range = Range.EVERYTHING;
         AnnotationMirror intRangeAnno =
@@ -214,7 +214,7 @@ public class ValueTransfer extends CFTransfer {
         if (bottomValAnno != null) {
             return Range.NOTHING;
         }
-        return range; //NumberUtils.castRange(subNode.getType(), range);
+        return NumberUtils.castRange(subNode.getType(), range, true);
     }
 
     /** a helper function to determine if this node is annotated with @IntRange */
@@ -920,14 +920,10 @@ public class ValueTransfer extends CFTransfer {
                 throw new RuntimeException("this is impossible, but javac issues a warning");
         }
 
-        Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), leftNode);
-        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), rightNode);
-
-        thenStore.insertValue(leftRec, atypefactory.createIntRangeAnnotation(thenLeftRange));
-        thenStore.insertValue(rightRec, atypefactory.createIntRangeAnnotation(thenRightRange));
-
-        elseStore.insertValue(leftRec, atypefactory.createIntRangeAnnotation(elseLeftRange));
-        elseStore.insertValue(rightRec, atypefactory.createIntRangeAnnotation(elseRightRange));
+        createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
+        createAnnotationFromRangeAndAddToStore(thenStore, thenLeftRange, leftNode);
+        createAnnotationFromRangeAndAddToStore(elseStore, elseRightRange, rightNode);
+        createAnnotationFromRangeAndAddToStore(elseStore, elseLeftRange, leftNode);
 
         // TODO: Refine the type of the comparison.
         return null;
@@ -938,21 +934,40 @@ public class ValueTransfer extends CFTransfer {
      * appropriate annotation from them, then combines that annotation with the existing annotation
      * on the node. The resulting annotation is inserted into the store.
      */
+    private void createAnnotationFromRangeAndAddToStore(CFStore store, Range range, Node node) {
+        AnnotationMirror anno = atypefactory.createIntRangeAnnotation(range);
+
+        addToStore(store, anno, node);
+    }
+
+    private void addToStore(CFStore store, AnnotationMirror anno, Node node) {
+        for (Node internal : splitAssignments(node)) {
+            AnnotationMirror currentAnno =
+                    atypefactory
+                            .getAnnotatedType(internal.getTree())
+                            .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
+            Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
+            // Combine the new annotations based on the results of the comparison with the existing type.
+            store.insertValue(
+                    rec,
+                    atypefactory.getQualifierHierarchy().greatestLowerBound(anno, currentAnno));
+
+            if (internal instanceof FieldAccessNode) {
+                refineArrayAtLengthAccess((FieldAccessNode) internal, store);
+            }
+        }
+    }
+
+    /**
+     * Takes a list of result values (i.e. the values possible after the comparison) and creates the
+     * appropriate annotation from them, then combines that annotation with the existing annotation
+     * on the node. The resulting annotation is inserted into the store.
+     */
     private void createAnnotationFromResultsAndAddToStore(
             CFStore store, List<?> results, Node node) {
         AnnotationMirror anno = atypefactory.createResultingAnnotation(node.getType(), results);
-        AnnotationMirror currentAnno =
-                atypefactory
-                        .getAnnotatedType(node.getTree())
-                        .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
-        Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node);
-        // Combine the new annotations based on the results of the comparison with the existing type.
-        store.insertValue(
-                rec, atypefactory.getQualifierHierarchy().greatestLowerBound(anno, currentAnno));
 
-        if (node instanceof FieldAccessNode) {
-            refineArrayAtLengthAccess((FieldAccessNode) node, store);
-        }
+        addToStore(store, anno, node);
     }
 
     @Override

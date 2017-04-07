@@ -775,7 +775,7 @@ public abstract class UBQualifier {
             return UpperBoundUnknownQualifier.UNKNOWN;
         }
 
-        public boolean isValuePlusOffsetLessThanMinLen(String array, int value, int minlen) {
+        public boolean isValuePlusOffsetLessThanMinLen(String array, long value, int minlen) {
             Set<OffsetEquation> offsets = map.get(array);
             if (offsets == null) {
                 return false;

@@ -135,4 +135,32 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         }
         return super.visitTypeCast(node, p);
     }
+    /*
+    @Override
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            ExpressionTree valueExp,
+            @CompilerMessageKey String errorKey) {
+
+        AnnotationMirror anno = atypeFactory.getAnnotationMirror(valueExp, IntRange.class);
+
+        if (anno != null) {
+            Range range = ValueAnnotatedTypeFactory.getIntRange(anno);
+            System.out.println(valueExp);
+            System.out.println("old range: " + range);
+            Range newRange = NumberUtils.castRange(atypeFactory.getAnnotatedType(valueExp).getUnderlyingType(), range, true);
+            System.out.println("new range: " + newRange);
+            AnnotationMirror newAnno = atypeFactory.createIntRangeAnnotation(newRange);
+            AnnotationMirror varTypeAnno = varType.getAnnotationInHierarchy(atypeFactory.BOTTOMVAL);
+            System.out.println("checking whether " + newAnno);
+            System.out.println("is a subtype of " + varTypeAnno);
+            System.out.println(atypeFactory.getQualifierHierarchy().isSubtype(newAnno, varTypeAnno));
+            if (atypeFactory.getQualifierHierarchy().isSubtype(newAnno, varTypeAnno)) {
+                System.out.println("skipping the standard common assignment check for " + valueExp);
+                return;
+            }
+        }
+        System.out.println("doing the standard common assignment check on " + valueExp);
+        super.commonAssignmentCheck(varType, valueExp, errorKey);
+    }*/
 }

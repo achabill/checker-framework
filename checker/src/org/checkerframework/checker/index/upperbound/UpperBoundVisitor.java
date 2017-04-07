@@ -94,8 +94,16 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
+
+        System.out.println("checking " + valueExp);
+        System.out.println(atypeFactory.getAnnotatedType(valueExp));
+        System.out.println(varType);
+
         if (!relaxedCommonAssignment(varType, valueExp)) {
+            System.out.println("calling normal common assignment check");
             super.commonAssignmentCheck(varType, valueExp, errorKey);
+        } else {
+            System.out.println("not calling normal common assignment check");
         }
     }
 
@@ -157,10 +165,16 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     private boolean relaxedCommonAssignmentCheck(
             LessThanLengthOf varLtlQual, ExpressionTree valueExp) {
 
+        System.out.println("entering relaxed cac with an ltl: " + varLtlQual);
+
         AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(valueExp);
         UBQualifier expQual = UBQualifier.createUBQualifier(expType, atypeFactory.UNKNOWN);
 
         Long value = IndexUtil.getMaxValue(valueExp, atypeFactory.getValueAnnotatedTypeFactory());
+
+        System.out.println(
+                "from the value checker, the max value for " + valueExp + " is " + value);
+        System.out.println(atypeFactory.getValueAnnotatedTypeFactory().getAnnotatedType(valueExp));
 
         if (value == null && !expQual.isLessThanLengthQualifier()) {
             return false;
@@ -169,6 +183,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         SameLenAnnotatedTypeFactory sameLenFactory = atypeFactory.getSameLenAnnotatedTypeFactory();
         MinLenAnnotatedTypeFactory minLenFactory = atypeFactory.getMinLenAnnotatedTypeFactory();
         for (String arrayName : varLtlQual.getArrays()) {
+
+            System.out.println("checking samelen and minlen for " + arrayName);
 
             List<String> sameLenArrays =
                     sameLenFactory.getSameLensFromString(arrayName, valueExp, getCurrentPath());
@@ -220,6 +236,12 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         if (value == null) {
             return false;
         }
-        return varQual.isValuePlusOffsetLessThanMinLen(arrayName, value.intValue(), minLen);
+
+        System.out.println("value.intValue(): " + value.intValue());
+        System.out.println("minlen: " + minLen);
+        System.out.println(
+                varQual.isValuePlusOffsetLessThanMinLen(arrayName, value.intValue(), minLen));
+
+        return varQual.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen);
     }
 }

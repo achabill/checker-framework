@@ -305,6 +305,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 }
             }
+
+            if (anno != null && AnnotationUtils.areSame(anno, UNKNOWNVAL)) {
+                switch (atm.getUnderlyingType().getKind()) {
+                    case INT:
+                    case LONG:
+                    case SHORT:
+                    case BYTE:
+                        atm.replaceAnnotation(
+                                createIntRangeAnnotation(Long.MIN_VALUE, Long.MAX_VALUE));
+                        break;
+                }
+            }
         }
     }
 
@@ -444,6 +456,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWNVAL;
         }
 
+        private boolean isIntRangeEverything(AnnotationMirror a) {
+            return AnnotationUtils.areSameByClass(a, IntRange.class)
+                    && getIntRange(a).isEverything();
+        }
+
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
          * annotations are Value. In this case, subAnno is a subtype of superAnno iff superAnno
@@ -455,10 +472,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
 
             if (AnnotationUtils.areSameByClass(superAnno, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(subAnno, BottomVal.class)) {
+                    || AnnotationUtils.areSameByClass(subAnno, BottomVal.class)
+                    || isIntRangeEverything(superAnno)) {
                 return true;
             } else if (AnnotationUtils.areSameByClass(subAnno, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(superAnno, BottomVal.class)) {
+                    || AnnotationUtils.areSameByClass(superAnno, BottomVal.class)
+                    || isIntRangeEverything(subAnno)) {
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
                 // Same type, so might be subtype
