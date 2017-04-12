@@ -278,7 +278,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         long annoMinVal = Collections.min(values);
                         long annoMaxVal = Collections.max(values);
                         atm.replaceAnnotation(
-                                createArrayLenRangeAnnotation(new Range(annoMinVal, annoMaxVal)));
+                                createArrayLenRangeAnnotation(
+                                        new Range(annoMinVal, annoMaxVal, ignoreOverflow)));
                     }
                 } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
                     long from = AnnotationUtils.getElementValue(anno, "from", Long.class, true);
@@ -378,8 +379,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return createIntRangeAnnotation(range1.union(range2));
                 } else if (AnnotationUtils.areSameByClass(a1, ArrayLenRange.class)) {
                     // special handling for ArrayLenRange
-                    Range range1 = getRange(a1);
-                    Range range2 = getRange(a2);
+                    Range range1 = getRange(a1, ignoreOverflow);
+                    Range range2 = getRange(a2, ignoreOverflow);
                     return createArrayLenRangeAnnotation(range1.union(range2));
                 } else {
                     List<Object> a1Values =
@@ -647,7 +648,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (AnnotationUtils.areSameByClass(dimType, IntVal.class)) {
                     rolv =
                             new RangeOrListOfValues(
-                                    RangeOrListOfValues.convertLongsToInts(getIntValues(dimType)));
+                                    RangeOrListOfValues.convertLongsToInts(getIntValues(dimType)),
+                                    ignoreOverflow);
                 }
                 if (rolv != null) {
                     AnnotationMirror newQual =
@@ -691,14 +693,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
                     if (arrayLen != null) {
                         List<Integer> currentLengths = getArrayLength(arrayLen);
-                        rolv.addAll(currentLengths);
+                        rolv.addAll(currentLengths, ignoreOverflow);
                     } else {
                         // Check for an arrayLenRange annotation
                         AnnotationMirror arrayLenRangeAnno =
                                 componentType.getAnnotation(ArrayLenRange.class);
                         if (arrayLenRangeAnno != null) {
-                            Range range = getRange(arrayLenRangeAnno);
-                            rolv.add(range);
+                            Range range = getRange(arrayLenRangeAnno, ignoreOverflow);
+                            rolv.add(range, ignoreOverflow);
                         }
                     }
 
@@ -996,7 +998,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         arrayAnno = receiverType.getAnnotation(ArrayLenRange.class);
                         if (arrayAnno != null) {
                             // array.length, where array : @ArrayLenRange(x)
-                            Range range = getRange(arrayAnno);
+                            Range range = getRange(arrayAnno, ignoreOverflow);
                             type.replaceAnnotation(createIntRangeAnnotation(range));
                             return null;
                         } else {

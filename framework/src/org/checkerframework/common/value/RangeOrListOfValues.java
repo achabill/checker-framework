@@ -31,10 +31,10 @@ class RangeOrListOfValues {
         isRange = false;
     }
 
-    public RangeOrListOfValues(List<Integer> values) {
+    public RangeOrListOfValues(List<Integer> values, boolean ignoreOverflow) {
         this.values = new ArrayList<>();
         isRange = false;
-        addAll(values);
+        addAll(values, ignoreOverflow);
     }
 
     public RangeOrListOfValues(Range range) {
@@ -42,12 +42,12 @@ class RangeOrListOfValues {
         isRange = true;
     }
 
-    public void add(Range otherRange) {
+    public void add(Range otherRange, boolean ignoreOverflow) {
         if (isRange) {
             range = range.union(otherRange);
         } else {
-            convertToRange();
-            add(otherRange);
+            convertToRange(ignoreOverflow);
+            add(otherRange, ignoreOverflow);
         }
     }
 
@@ -59,9 +59,11 @@ class RangeOrListOfValues {
      * <p>If reading from an {@link org.checkerframework.common.value.qual.IntRange} annotation,
      * {@link #convertLongsToInts(List)} should be called before calling this method.
      */
-    public void addAll(List<Integer> newValues) {
+    public void addAll(List<Integer> newValues, boolean ignoreOverflow) {
         if (isRange) {
-            Range newValueRange = new Range(Collections.min(newValues), Collections.max(newValues));
+            Range newValueRange =
+                    new Range(
+                            Collections.min(newValues), Collections.max(newValues), ignoreOverflow);
             range = range.union(newValueRange);
         } else {
             for (Integer i : newValues) {
@@ -70,7 +72,7 @@ class RangeOrListOfValues {
                 }
             }
             if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {
-                convertToRange();
+                convertToRange(ignoreOverflow);
             }
         }
     }
@@ -109,10 +111,10 @@ class RangeOrListOfValues {
      * Transforms this into a range. Fails if there are no values in the list. Has no effect if this
      * is already a range.
      */
-    public void convertToRange() {
+    public void convertToRange(boolean ignoreOverflow) {
         if (!isRange) {
             isRange = true;
-            range = new Range(Collections.min(values), Collections.max(values));
+            range = new Range(Collections.min(values), Collections.max(values), ignoreOverflow);
             values = null;
         }
     }

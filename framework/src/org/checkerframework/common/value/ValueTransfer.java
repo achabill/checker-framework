@@ -220,11 +220,27 @@ public class ValueTransfer extends CFTransfer {
         return AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class) != null;
     }
 
-    /** a helper function to determine if this node is annotated with @UnknownVal */
-    private boolean isUnknownVal(Node node, TransferInput<CFValue, CFStore> p) {
+    /**
+     * a helper function to determine if this node has an underlying integral type and is annotated
+     * with @UnknownVal
+     */
+    private boolean isIntegralUnknownVal(Node node, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(node);
         return AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class)
-                != null;
+                        != null
+                && isIntegral(node.getType().getKind());
+    }
+
+    private boolean isIntegral(TypeKind typeKind) {
+        switch (typeKind) {
+            case INT:
+            case SHORT:
+            case LONG:
+            case BYTE:
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**
@@ -295,12 +311,16 @@ public class ValueTransfer extends CFTransfer {
         if (lengthAnno != null) {
             RangeOrListOfValues rolv;
             if (isIntRange) {
-                rolv = new RangeOrListOfValues(ValueAnnotatedTypeFactory.getRange(lengthAnno));
+                rolv =
+                        new RangeOrListOfValues(
+                                ValueAnnotatedTypeFactory.getRange(
+                                        lengthAnno, atypefactory.ignoreOverflow));
             } else {
                 List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
                 rolv =
                         new RangeOrListOfValues(
-                                RangeOrListOfValues.convertLongsToInts(lengthValues));
+                                RangeOrListOfValues.convertLongsToInts(lengthValues),
+                                atypefactory.ignoreOverflow);
             }
             AnnotationMirror newArrayAnno = rolv.createAnnotation(atypefactory);
             AnnotationMirror oldArrayAnno =
@@ -807,8 +827,8 @@ public class ValueTransfer extends CFTransfer {
             CFStore elseStore) {
         if (isIntRange(leftNode, p)
                 || isIntRange(rightNode, p)
-                || isUnknownVal(rightNode, p)
-                || isUnknownVal(leftNode, p)) {
+                || isIntegralUnknownVal(rightNode, p)
+                || isIntegralUnknownVal(leftNode, p)) {
             return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
         }
         List<Boolean> resultValues = new ArrayList<>();
