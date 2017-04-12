@@ -103,7 +103,7 @@ public class ValueCheckerUtils {
             List<Long> longs = ValueAnnotatedTypeFactory.getIntValues(anno);
             values = convertIntVal(longs, castType, castTo);
         } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
-            Range range = ValueAnnotatedTypeFactory.getIntRange(anno, ignoreOverflow);
+            Range range = ValueAnnotatedTypeFactory.getRange(anno, ignoreOverflow);
             List<Long> longs = getValuesFromRange(range, Long.class);
             values = convertIntVal(longs, castType, castTo);
         } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
