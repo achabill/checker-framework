@@ -1186,7 +1186,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.size() > MAX_VALUES) {
             long valMin = Collections.min(values);
             long valMax = Collections.max(values);
-            return createIntRangeAnnotation(new Range(valMin, valMax));
+            return createIntRangeAnnotation(valMin, valMax);
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
             builder.setValue("value", values);
@@ -1396,7 +1396,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Create an {@code @IntRange} annotation from the two (inclusive) bounds. Does not return
      * BOTTOMVAL or UNKNOWNVAL.
      */
-    public AnnotationMirror createIntRangeAnnotation(long from, long to) {
+    private AnnotationMirror createIntRangeAnnotation(long from, long to) {
         assert from <= to;
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
         builder.setValue("from", from);
@@ -1413,14 +1413,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return BOTTOMVAL;
         } else if (range.isEverything()) {
             return UNKNOWNVAL;
-        } else if (!range.isWiderThan(MAX_VALUES)) {
-            List<Long> values = new ArrayList<>();
-            for (long l = range.from; l <= range.to; l++) {
-                values.add(l);
-            }
-            return createIntValAnnotation(values);
-        } else {
+        } else if (range.isWiderThan(MAX_VALUES)) {
             return createIntRangeAnnotation(range.from, range.to);
+        } else {
+            List<Long> newValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
+            return createIntValAnnotation(newValues);
         }
     }
 
@@ -1585,10 +1582,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Used to find the minimum length of an array, which is useful for array bounds checking.
-     * Returns -1 if there is no minimum length known, or null if the passed annotation is null.
+     * Returns null there is no minimum length known, or if the passed annotation is null.
      */
     public Integer getMinLenValue(AnnotationMirror annotation) {
-        System.out.println("fetching minlen from " + annotation);
         if (annotation == null) {
             return null;
         }
@@ -1603,6 +1599,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /**
+     * Returns the minimum value of an integral type. This is used by the Index Checker's array
+     * bounds checking routines when determining the minimum length of an array from the annotation
+     * on the length of the array.
+     */
     public Long getMinLenValueFromLengthType(AnnotatedTypeMirror atm) {
         AnnotationMirror anm = atm.getAnnotationInHierarchy(UNKNOWNVAL);
         if (AnnotationUtils.areSameByClass(anm, IntVal.class)) {
