@@ -112,8 +112,8 @@ public class Range {
     /**
      * Converts a this range to a 32-bit integral range.
      *
-     * <p>If this range ignores overflow and the one of the bounds is outside the Integer range,
-     * then that bound is set to the bound of the Integer range.
+     * <p>If this range ignores overflow and one of the bounds is outside the Integer range, then
+     * that bound is set to the bound of the Integer range.
      *
      * <p>If this range does not ignore overflow and is too wide, i.e., wider than the full range of
      * the Integer class, return INT_EVERYTHING.
@@ -149,8 +149,8 @@ public class Range {
     /**
      * Converts a this range to a 16-bit short range.
      *
-     * <p>If this range ignores overflow and the one of the bounds is outside the Short range, then
-     * that bound is set to the bound of the Short range.
+     * <p>If this range ignores overflow and one of the bounds is outside the Short range, then that
+     * bound is set to the bound of the Short range.
      *
      * <p>If this range is too wide, i.e., wider than the full range of the Short class, return
      * SHORT_EVERYTHING.
@@ -187,8 +187,8 @@ public class Range {
     /**
      * Converts a this range to a 8-bit byte range.
      *
-     * <p>If this range ignores overflow and the one of the bounds is outside the Byte range, then
-     * that bound is set to the bound of the Byte range.
+     * <p>If this range ignores overflow and one of the bounds is outside the Byte range, then that
+     * bound is set to the bound of the Byte range.
      *
      * <p>If this range is too wide, i.e., wider than the full range of the Byte class, return
      * BYTE_EVERYTHING.
@@ -886,12 +886,12 @@ public class Range {
      * <p>If the BigInteger range is too wide, i.e., wider than the full range of the Long class,
      * return EVERYTHING.
      *
-     * <p>If the BigInteger bounds are out of the Long type scope and this range does not ignore
+     * <p>If one of the BigInteger bounds is out of Long's range and this range does not ignore
      * overflow, convert the bounds to Long type in accordance with Java overflow rules, e.g.,
      * Long.MAX_VALUE + 1 is converted to Long.MIN_VALUE.
      *
-     * <p>If the BigInteger bounds are out of the Long type scope and this range ignores overflow,
-     * convert the bound that is outside the Long type scope to the bound on Long.
+     * <p>If one of the BigInteger bounds is out of Long's range and this range ignores overflow,
+     * convert the bound that is outside Long's range to max/min value of a Long.
      *
      * @param bigFrom the lower bound of the BigInteger range
      * @param bigTo the upper bound of the BigInteger range
@@ -907,7 +907,7 @@ public class Range {
             BigInteger longMax = BigInteger.valueOf(Long.MAX_VALUE);
             resultTo = bigTo.min(longMax).longValue();
         } else {
-            if (numValues.compareTo(longWidth) == 1) {
+            if (numValues.compareTo(longWidth) > 0) {
                 return EVERYTHING;
             } else {
                 resultFrom = bigFrom.longValue();
