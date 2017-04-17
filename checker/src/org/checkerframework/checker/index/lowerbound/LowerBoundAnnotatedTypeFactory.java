@@ -317,7 +317,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Looks up the minlen of a member select tree. Returns null if the tree doesn't represent
          * an array's length field.
          */
-        private Long getMinLenFromMemberSelectTree(MemberSelectTree tree) {
+        private Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
             if (TreeUtils.isArrayLengthAccess(tree)) {
                 AnnotatedTypeMirror minLenType =
                         getValueAnnotatedTypeFactory().getAnnotatedType(tree);
@@ -333,7 +333,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-            Long minLen = getMinLenFromMemberSelectTree(tree);
+            Integer minLen = getMinLenFromMemberSelectTree(tree);
             if (minLen != null) {
                 type.replaceAnnotation(anmFromVal(minLen));
             }
@@ -510,7 +510,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // this either NN or POS instead of GTEN1 or LBU.
                 if (leftExpr.getKind() == Kind.MEMBER_SELECT) {
                     MemberSelectTree mstree = (MemberSelectTree) leftExpr;
-                    Long minLen = getMinLenFromMemberSelectTree(mstree);
+                    Integer minLen = getMinLenFromMemberSelectTree(mstree);
                     if (minLen != null) {
                         type.replaceAnnotation(anmFromVal(minLen - valRight));
                     }

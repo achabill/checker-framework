@@ -129,9 +129,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Range.IGNORE_OVERFLOW = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
-        addAliasedAnnotation(
-                MinLen.class,
-                BOTTOMVAL); // The actual ArrayLenRange is created later, this just registers the annotation.
+        // The actual ArrayLenRange is created by
+        // {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)};
+        // this line just registers the alias. The BottomVal is never used.
+        addAliasedAnnotation(MinLen.class, BOTTOMVAL);
 
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
@@ -147,7 +148,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         if (AnnotationUtils.areSameByClass(anno, MinLen.class)) {
             Integer from = getMinLenValue(anno);
-            if (from != null) {
+            if (from != null && from >= 0) {
                 return createArrayLenRangeAnnotation(from, Integer.MAX_VALUE);
             } else {
                 return createArrayLenRangeAnnotation(0, Integer.MAX_VALUE);
@@ -348,7 +349,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     if (from > to || from < 0) {
                         atm.replaceAnnotation(BOTTOMVAL);
                     }
-                } else if (!AnnotationUtils.areSameByClass(anno, MinLen.class)) {
+                } else {
                     // In here the annotation is @*Val where (*) is not Int but other types (String, Double, etc).
                     // Therefore we extract its values in a generic way to check its size.
                     List<Object> values =
@@ -1628,7 +1629,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Used to find the minimum length of an array, which is useful for array bounds checking.
-     * Returns null there is no minimum length known, or if the passed annotation is null.
+     * Returns null there is no minimum length known, or if the passed annotation is null. Note that
+     * this routine handles actual {@link MinLen} annotations, because it is called by {@link
+     * ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms {@link
+     * MinLen} annotations into {@link ArrayLenRange} annotations.
      */
     public Integer getMinLenValue(AnnotationMirror annotation) {
         if (annotation == null) {
@@ -1650,14 +1654,23 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * bounds checking routines when determining the minimum length of an array from the annotation
      * on the length of the array.
      */
-    public Long getMinLenValueFromLengthType(AnnotatedTypeMirror atm) {
+    public Integer getMinLenValueFromLengthType(AnnotatedTypeMirror atm) {
         AnnotationMirror anm = atm.getAnnotationInHierarchy(UNKNOWNVAL);
         if (AnnotationUtils.areSameByClass(anm, IntVal.class)) {
-            List<Long> res = getIntValues(anm);
-            return Collections.min(res);
+            List<Long> possibleValues = getIntValues(anm);
+            Long minlen = Collections.min(possibleValues);
+            if (minlen < 0) {
+                return 0;
+            } else {
+                return minlen.intValue();
+            }
         } else if (AnnotationUtils.areSameByClass(anm, IntRange.class)) {
             Range range = getRange(anm);
-            return range.from;
+            if (range.from < 0) {
+                return 0;
+            } else {
+                return Long.valueOf(range.from).intValue();
+            }
         }
         return null;
     }
