@@ -17,7 +17,7 @@ import org.checkerframework.checker.index.qual.SearchIndexUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
-import org.checkerframework.common.value.ValueIgnoreRangeOverflowChecker;
+import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -43,7 +43,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * known at compile time (constant propagation and folding).
      */
     ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
-        return getTypeFactoryOfSubchecker(ValueIgnoreRangeOverflowChecker.class);
+        return getTypeFactoryOfSubchecker(ValueChecker.class);
     }
 
     @Override
