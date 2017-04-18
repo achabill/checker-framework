@@ -1,6 +1,7 @@
 // Test for issue 65: https://github.com/kelloggm/checker-framework/issues/65
 
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.*;
 
 // This test ensures that the checker functions on primitive wrappers in
 // addition to literal primitives. Primarily it focuses on Integer/int.

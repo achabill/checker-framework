@@ -25,6 +25,7 @@
 
 package java.util;
 import java.util.Map.Entry;
+import org.checkerframework.common.value.qual.*;
 import org.checkerframework.checker.index.qual.*;
 
 /**

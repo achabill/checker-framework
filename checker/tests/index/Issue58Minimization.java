@@ -1,5 +1,5 @@
 import org.checkerframework.checker.index.qual.*;
-import org.checkerframework.common.value.qual.MinLen;
+import org.checkerframework.common.value.qual.*;
 
 class Issue58Minimization {
 

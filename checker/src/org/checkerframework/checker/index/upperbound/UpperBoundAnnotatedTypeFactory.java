@@ -20,8 +20,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
-import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
-import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.IndexOrLow;
@@ -30,10 +28,8 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.LengthOf;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
-import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyUpperBound;
-import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SearchIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
@@ -49,7 +45,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueIgnoreRangeOverflowChecker;
 import org.checkerframework.common.value.qual.BottomVal;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -133,15 +128,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     SameLenAnnotatedTypeFactory getSameLenAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(SameLenChecker.class);
-    }
-
-    /**
-     * Provides a way to query the Lower Bound Checker, which determines whether each integer in the
-     * program is non-negative or not, and checks that no possibly negative integers are used to
-     * access arrays.
-     */
-    private LowerBoundAnnotatedTypeFactory getLowerBoundAnnotatedTypeFactory() {
-        return getTypeFactoryOfSubchecker(LowerBoundChecker.class);
     }
 
     @Override
@@ -295,18 +281,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         builder.setValue("value", names);
         return builder.build();
-    }
-
-    /**
-     * Returns true iff the given node has the passed Lower Bound qualifier according to the LBC.
-     * The last argument should be Positive.class, NonNegative.class, or GTENegativeOne.class.
-     */
-    public boolean hasLowerBoundTypeByClass(Node node, Class<? extends Annotation> classOfType) {
-        return AnnotationUtils.areSameByClass(
-                getLowerBoundAnnotatedTypeFactory()
-                        .getAnnotatedType(node.getTree())
-                        .getAnnotationInHierarchy(getLowerBoundAnnotatedTypeFactory().UNKNOWN),
-                classOfType);
     }
 
     @Override
@@ -512,20 +486,19 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private void addAnnotationForAnd(
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
             AnnotatedTypeMirror leftType = getAnnotatedType(left);
-            AnnotatedTypeMirror leftLBType =
-                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(left);
+            AnnotatedTypeMirror leftLBType = getValueAnnotatedTypeFactory().getAnnotatedType(left);
             AnnotationMirror leftResultType = UNKNOWN;
-            if (leftLBType.hasAnnotation(NonNegative.class)
-                    || leftLBType.hasAnnotation(Positive.class)) {
+            if (getValueAnnotatedTypeFactory().isPositive(leftLBType)
+                    || getValueAnnotatedTypeFactory().isNonNegative(leftLBType)) {
                 leftResultType = leftType.getAnnotationInHierarchy(UNKNOWN);
             }
 
             AnnotatedTypeMirror rightType = getAnnotatedType(right);
             AnnotatedTypeMirror rightLBType =
-                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(right);
+                    getValueAnnotatedTypeFactory().getAnnotatedType(right);
             AnnotationMirror rightResultType = UNKNOWN;
-            if (rightLBType.hasAnnotation(NonNegative.class)
-                    || rightLBType.hasAnnotation(Positive.class)) {
+            if (getValueAnnotatedTypeFactory().isPositive(rightLBType)
+                    || getValueAnnotatedTypeFactory().isNonNegative(rightLBType)) {
                 rightResultType = rightType.getAnnotationInHierarchy(UNKNOWN);
             }
 

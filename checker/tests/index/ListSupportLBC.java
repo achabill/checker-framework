@@ -1,7 +1,7 @@
 import java.util.ArrayList;
-import org.checkerframework.checker.index.qual.GTENegativeOne;
-import org.checkerframework.checker.index.qual.NonNegative;
-import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.common.value.qual.GTENegativeOne;
+import org.checkerframework.common.value.qual.NonNegative;
+import org.checkerframework.common.value.qual.Positive;
 
 // @skip-test until we bring list support back
 

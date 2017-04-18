@@ -25,6 +25,7 @@
 
 package java.lang;
 import java.util.Random;
+import org.checkerframework.common.value.qual.*;
 import org.checkerframework.checker.index.qual.*;
 
 /**

@@ -1,4 +1,4 @@
-import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.common.value.qual.NonNegative;
 
 class IntroShift {
     void test() {

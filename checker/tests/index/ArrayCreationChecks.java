@@ -1,6 +1,7 @@
 // This test case is for issue 44: https://github.com/kelloggm/checker-framework/issues/44
 
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.*;
 
 class ArrayCreationChecks {
 

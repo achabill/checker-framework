@@ -2,7 +2,7 @@ package org.checkerframework.checker.index.searchindex;
 
 import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.ValueIgnoreRangeOverflowChecker;
 import org.checkerframework.framework.source.SuppressWarningsKeys;
 
 /**
@@ -18,7 +18,7 @@ public class SearchIndexChecker extends BaseTypeChecker {
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
                 super.getImmediateSubcheckerClasses();
-        checkers.add(ValueChecker.class);
+        checkers.add(ValueIgnoreRangeOverflowChecker.class);
         return checkers;
     }
 }

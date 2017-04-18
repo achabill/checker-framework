@@ -418,7 +418,10 @@ public class ValueTransfer extends CFTransfer {
             Node rightNode,
             NumericalBinaryOps op,
             TransferInput<CFValue, CFStore> p) {
-        if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
+        if (!isIntRange(leftNode, p)
+                && !isIntRange(rightNode, p)
+                && !isIntegralUnknownVal(rightNode, p)
+                && !isIntegralUnknownVal(leftNode, p)) {
             List<Number> resultValues = calculateValuesBinaryOp(leftNode, rightNode, op, p);
             return atypefactory.createNumberAnnotationMirror(resultValues);
         } else {
@@ -437,6 +440,12 @@ public class ValueTransfer extends CFTransfer {
                 && TypesUtils.isIntegral(rightNode.getType())) {
             Range leftRange = getIntRange(leftNode, p);
             Range rightRange = getIntRange(rightNode, p);
+
+            System.out.println("left node: " + leftNode);
+            System.out.println("left Range : " + leftRange);
+            System.out.println("right node: " + rightNode);
+            System.out.println("right Range: " + rightRange);
+
             Range resultRange;
             switch (op) {
                 case ADDITION:

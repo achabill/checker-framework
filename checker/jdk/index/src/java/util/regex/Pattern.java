@@ -24,6 +24,7 @@
  */
 
 package java.util.regex;
+import org.checkerframework.common.value.qual.*;
 import org.checkerframework.checker.index.qual.*;
 
 import java.security.AccessController;

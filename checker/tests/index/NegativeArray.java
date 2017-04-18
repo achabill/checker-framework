@@ -1,4 +1,4 @@
-import org.checkerframework.checker.index.qual.GTENegativeOne;
+import org.checkerframework.common.value.qual.GTENegativeOne;
 
 public class NegativeArray {
 

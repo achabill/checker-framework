@@ -39,6 +39,7 @@
  */
 
 package java.util;
+import org.checkerframework.common.value.qual.*;
 import org.checkerframework.checker.index.qual.*;
 
 import java.io.IOException;
