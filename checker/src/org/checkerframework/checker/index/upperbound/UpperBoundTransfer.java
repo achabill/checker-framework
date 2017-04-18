@@ -8,8 +8,6 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.index.IndexUtil;
-import org.checkerframework.checker.index.qual.NonNegative;
-import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
@@ -108,8 +106,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         } else if (node instanceof NumericalSubtractionNode) {
             propagateToSubtractionOperands(typeOfNode, (NumericalSubtractionNode) node, in, store);
         } else if (node instanceof NumericalMultiplicationNode) {
-            if (atypeFactory.hasLowerBoundTypeByClass(node, NonNegative.class)
-                    || atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
+            if (atypeFactory
+                    .getValueAnnotatedTypeFactory()
+                    .isNonNegative(
+                            atypeFactory
+                                    .getValueAnnotatedTypeFactory()
+                                    .getAnnotatedType(node.getTree()))) {
                 Node right = ((NumericalMultiplicationNode) node).getRightOperand();
                 Node left = ((NumericalMultiplicationNode) node).getLeftOperand();
                 propagateToMultiplicationOperand(typeOfNode, left, right, in, store);
@@ -131,7 +133,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             Node other,
             TransferInput<CFValue, CFStore> in,
             CFStore store) {
-        if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
+        if (atypeFactory
+                .getValueAnnotatedTypeFactory()
+                .isPositive(
+                        atypeFactory
+                                .getValueAnnotatedTypeFactory()
+                                .getAnnotatedType(other.getTree()))) {
             Long minValue =
                     IndexUtil.getMinValue(
                             other.getTree(), atypeFactory.getValueAnnotatedTypeFactory());
@@ -194,9 +201,19 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier newQual = operandQual.glb(typeOfAddition.plusOffset(other, atypeFactory));
 
         /** If the node is NN, add an LTEL to the qual. If POS, add an LTL. */
-        if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
+        if (atypeFactory
+                .getValueAnnotatedTypeFactory()
+                .isPositive(
+                        atypeFactory
+                                .getValueAnnotatedTypeFactory()
+                                .getAnnotatedType(other.getTree()))) {
             newQual = newQual.glb(typeOfAddition.plusOffset(1));
-        } else if (atypeFactory.hasLowerBoundTypeByClass(other, NonNegative.class)) {
+        } else if (atypeFactory
+                .getValueAnnotatedTypeFactory()
+                .isNonNegative(
+                        atypeFactory
+                                .getValueAnnotatedTypeFactory()
+                                .getAnnotatedType(other.getTree()))) {
             newQual = newQual.glb(typeOfAddition);
         }
         Receiver operandRec = FlowExpressions.internalReprOf(atypeFactory, operand);
@@ -418,8 +435,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             NumericalSubtractionNode n, TransferInput<CFValue, CFStore> in) {
         UBQualifier left = getUBQualifier(n.getLeftOperand(), in);
         UBQualifier leftWithOffset = left.plusOffset(n.getRightOperand(), atypeFactory);
-        if (atypeFactory.hasLowerBoundTypeByClass(n.getRightOperand(), NonNegative.class)
-                || atypeFactory.hasLowerBoundTypeByClass(n.getRightOperand(), Positive.class)) {
+        if (atypeFactory
+                .getValueAnnotatedTypeFactory()
+                .isNonNegative(
+                        atypeFactory
+                                .getValueAnnotatedTypeFactory()
+                                .getAnnotatedType(n.getRightOperand().getTree()))) {
             // If the right side of the expression is NN or POS, then all the left side's
             // annotations should be kept.
             if (left.isLessThanLengthQualifier()) {

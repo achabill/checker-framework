@@ -24,6 +24,7 @@
  */
 
 package java.util;
+import org.checkerframework.common.value.qual.*;
 import org.checkerframework.checker.index.qual.*;
 import java.lang.ref.WeakReference;
 import java.lang.ref.ReferenceQueue;

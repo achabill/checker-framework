@@ -24,6 +24,7 @@
  */
 
 package java.io;
+import org.checkerframework.common.value.qual.*;
 import org.checkerframework.checker.index.qual.*;
 
 import java.util.Formatter;
@@ -163,6 +164,7 @@ public class PrintStream extends FilterOutputStream
      *                    character or byte (<code>'\n'</code>) is written
      * @param  encoding   The name of a supported
      *                    <a href="../lang/package-summary.html#charenc">
+import org.checkerframework.common.value.qual.*;
 import org.checkerframework.checker.index.qual.*;
      *                    character encoding</a>
      *

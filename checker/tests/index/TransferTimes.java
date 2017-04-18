@@ -1,5 +1,5 @@
-import org.checkerframework.checker.index.qual.NonNegative;
-import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.common.value.qual.NonNegative;
+import org.checkerframework.common.value.qual.Positive;
 
 public class TransferTimes {
 

@@ -1,5 +1,5 @@
 import org.checkerframework.checker.index.qual.IndexFor;
-import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.common.value.qual.NonNegative;
 
 //@skip-test until #127 is resolved.
 

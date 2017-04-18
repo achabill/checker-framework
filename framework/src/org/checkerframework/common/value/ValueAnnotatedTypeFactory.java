@@ -34,10 +34,13 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.GTENegativeOne;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.value.qual.MinLenFieldInvariant;
+import org.checkerframework.common.value.qual.NonNegative;
+import org.checkerframework.common.value.qual.Positive;
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
@@ -132,6 +135,25 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)};
         // this line just registers the alias. The BottomVal is never used.
         addAliasedAnnotation(MinLen.class, BOTTOMVAL);
+
+        // Lower Bound annotations are just aliases for these IntRange annotations.
+        addAliasedAnnotation(Positive.class, createIntRangeAnnotation(1L, Long.MAX_VALUE));
+        addAliasedAnnotation(NonNegative.class, createIntRangeAnnotation(0L, Long.MAX_VALUE));
+        addAliasedAnnotation(GTENegativeOne.class, createIntRangeAnnotation(-1L, Long.MAX_VALUE));
+
+        // The Index Checker also needs to alias some of its annotations here.
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.IndexFor",
+                createIntRangeAnnotation(0L, Long.MAX_VALUE));
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.IndexOrLow",
+                createIntRangeAnnotation(-1L, Long.MAX_VALUE));
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.IndexOrHigh",
+                createIntRangeAnnotation(0L, Long.MAX_VALUE));
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.LengthOf",
+                createIntRangeAnnotation(0L, Long.MAX_VALUE));
 
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
@@ -1601,6 +1623,45 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         } else {
             return null;
         }
+    }
+
+    /** Returns true if the value checker's type is equivalent to an {@link Positive} annotation. */
+    public boolean isPositive(AnnotatedTypeMirror atm) {
+        return isGreaterThanOrEqualToValue(atm, 1);
+    }
+
+    /**
+     * Returns true if the value checker's type is equivalent to an {@link NonNegative} annotation.
+     */
+    public boolean isNonNegative(AnnotatedTypeMirror atm) {
+        return isGreaterThanOrEqualToValue(atm, 0);
+    }
+
+    /**
+     * Returns true if the value checker's type is equivalent to an {@link GTENegativeOne}
+     * annotation.
+     */
+    public boolean isGTENegativeOne(AnnotatedTypeMirror atm) {
+        return isGreaterThanOrEqualToValue(atm, -1);
+    }
+
+    /** Helper function for comparing integer values to constants. */
+    private boolean isGreaterThanOrEqualToValue(AnnotatedTypeMirror atm, long val) {
+        AnnotationMirror anm = atm.getAnnotationInHierarchy(UNKNOWNVAL);
+        if (AnnotationUtils.areSameByClass(anm, IntRange.class)) {
+            Range range = getRange(anm);
+            return range.from >= val;
+        }
+        if (AnnotationUtils.areSameByClass(anm, IntVal.class)) {
+            List<Long> possibleValues = getIntValues(anm);
+            for (Long l : possibleValues) {
+                if (l < val) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     /**

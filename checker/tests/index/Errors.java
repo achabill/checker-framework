@@ -1,7 +1,7 @@
-import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.LowerBoundUnknown;
-import org.checkerframework.checker.index.qual.NonNegative;
-import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.common.value.qual.GTENegativeOne;
+import org.checkerframework.common.value.qual.NonNegative;
+import org.checkerframework.common.value.qual.Positive;
 
 public class Errors {
 

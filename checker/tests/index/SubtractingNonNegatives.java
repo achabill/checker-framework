@@ -1,6 +1,7 @@
 // Test case for issue 98: https://github.com/kelloggm/checker-framework/issues/98
 
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.*;
 
 public class SubtractingNonNegatives {
     public static void m4(int[] a, @IndexFor("#1") int i, @IndexFor("#1") int j) {

@@ -36,6 +36,7 @@ import java.security.AccessController;
 import sun.misc.Cleaner;
 import sun.security.action.GetPropertyAction;
 
+import org.checkerframework.common.value.qual.*;
 import org.checkerframework.checker.index.qual.*;
 
 public class FileChannelImpl

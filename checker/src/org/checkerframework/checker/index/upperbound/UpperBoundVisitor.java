@@ -28,9 +28,26 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFactory> {
 
     private static final String UPPER_BOUND = "array.access.unsafe.high";
+    private static final String LOWER_BOUND = "array.access.unsafe.low";
+    private static final String NEGATIVE_ARRAY = "array.length.negative";
 
     public UpperBoundVisitor(BaseTypeChecker checker) {
         super(checker);
+    }
+
+    /** If an array is created with a length that might be too low, report a warning. */
+    @Override
+    public Void visitNewArray(NewArrayTree tree, Void type) {
+        if (tree.getDimensions().size() > 0) {
+            for (ExpressionTree dim : tree.getDimensions()) {
+                AnnotatedTypeMirror dimType =
+                        atypeFactory.getValueAnnotatedTypeFactory().getAnnotatedType(dim);
+                if (!atypeFactory.getValueAnnotatedTypeFactory().isNonNegative(dimType)) {
+                    checker.report(Result.failure(NEGATIVE_ARRAY, dimType.toString()), dim);
+                }
+            }
+        }
+        return super.visitNewArray(tree, type);
     }
 
     /**
@@ -53,10 +70,18 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     /**
      * Checks if this array access is either using a variable that is less than the length of the
      * array, or using a constant less than the array's minlen. Issues an error if neither is true.
+     * Also issues an error if the index is not known to be non-negative.
      */
     private void visitAccess(ExpressionTree indexTree, ExpressionTree arrTree) {
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
         String arrName = FlowExpressions.internalReprOf(this.atypeFactory, arrTree).toString();
+
+        // Check the lower bound
+        AnnotatedTypeMirror valueType =
+                atypeFactory.getValueAnnotatedTypeFactory().getAnnotatedType(indexTree);
+        if (!atypeFactory.getValueAnnotatedTypeFactory().isNonNegative(valueType)) {
+            checker.report(Result.failure(LOWER_BOUND, valueType.toString(), arrName), indexTree);
+        }
 
         UBQualifier qualifier = UBQualifier.createUBQualifier(indexType, atypeFactory.UNKNOWN);
         if (qualifier.isLessThanLengthOf(arrName)) {

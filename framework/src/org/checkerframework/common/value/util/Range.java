@@ -544,6 +544,10 @@ public class Range {
 
     /** We give up the analysis for bitwise AND operation */
     public Range bitwiseAnd(Range right) {
+        // If the first bit is zero for either, the result is >= 0.
+        if (this.from >= 0 || right.from >= 0) {
+            return new Range(0, Long.MAX_VALUE);
+        }
         return EVERYTHING;
     }
 

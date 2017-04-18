@@ -2343,9 +2343,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 this.getQualifierHierarchy().getTypeQualifiers(), a);
     }
 
-    /** Add the annotation clazz as an alias for the annotation type. */
+    /** Add the annotation alias as an alias for the annotation type. */
     protected void addAliasedAnnotation(Class<?> alias, AnnotationMirror type) {
-        aliases.put(alias.getCanonicalName(), type);
+        addAliasedAnnotation(alias.getCanonicalName(), type);
+    }
+
+    /** Add the annotation with canonical name canonicalName as an alias for the annotation type. */
+    protected void addAliasedAnnotation(String canonicalName, AnnotationMirror type) {
+        aliases.put(canonicalName, type);
     }
 
     /**

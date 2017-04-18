@@ -1,4 +1,4 @@
-import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.common.value.qual.Positive;
 
 public class Boilerplate {
 
