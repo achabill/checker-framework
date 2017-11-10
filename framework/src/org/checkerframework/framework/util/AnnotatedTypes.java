@@ -826,6 +826,66 @@ public class AnnotatedTypes {
         return found;
     }
 
+    /**
+     * Replaces all instances of the the {@code oldAnno} with instances of {@code newAnno}. Descends
+     * recursively into type arguments and arrays. This method might be easier to implement directly
+     * as instance method in AnnotatedTypeMirror; it sort of corresponds to a "deep" version of
+     * {@link AnnotatedTypeMirror#replaceAnnotation(AnnotationMirror)}.
+     *
+     * @param type the type in which to perform the replacement
+     * @param oldAnno the annotation to replace
+     * @param newAnno the replacement annotation
+     */
+    public static void replaceAnnotationDeep(
+            AnnotatedTypeMirror type, AnnotationMirror oldAnno, AnnotationMirror newAnno) {
+        replaceAnnotationDeepImpl(type, oldAnno, newAnno, new LinkedList<>());
+    }
+
+    /*
+     * For type variables we might hit the same type again. We keep a list of visited types.
+     */
+    private static void replaceAnnotationDeepImpl(
+            AnnotatedTypeMirror type,
+            AnnotationMirror oldAnno,
+            AnnotationMirror newAnno,
+            List<AnnotatedTypeMirror> visited) {
+        // if we find the type to replace, replace it
+        if (type.hasAnnotation(oldAnno)) {
+            type.replaceAnnotation(newAnno);
+        }
+        boolean vis = visited.contains(type);
+        visited.add(type);
+
+        // descend into other parts of the type
+        if (!vis) {
+            if (type.getKind() == TypeKind.DECLARED) {
+                AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
+                for (AnnotatedTypeMirror typeMirror : declaredType.getTypeArguments()) {
+                    replaceAnnotationDeepImpl(typeMirror, oldAnno, newAnno, visited);
+                }
+            } else if (type.getKind() == TypeKind.ARRAY) {
+                AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
+                replaceAnnotationDeepImpl(arrayType.getComponentType(), oldAnno, newAnno, visited);
+            } else if (type.getKind() == TypeKind.TYPEVAR) {
+                AnnotatedTypeVariable atv = (AnnotatedTypeVariable) type;
+                if (atv.getUpperBound() != null) {
+                    replaceAnnotationDeepImpl(atv.getUpperBound(), oldAnno, newAnno, visited);
+                }
+                if (atv.getLowerBound() != null) {
+                    replaceAnnotationDeepImpl(atv.getLowerBound(), oldAnno, newAnno, visited);
+                }
+            } else if (type.getKind() == TypeKind.WILDCARD) {
+                AnnotatedWildcardType awc = (AnnotatedWildcardType) type;
+                if (awc.getExtendsBound() != null) {
+                    replaceAnnotationDeepImpl(awc.getExtendsBound(), oldAnno, newAnno, visited);
+                }
+                if (awc.getSuperBound() != null) {
+                    replaceAnnotationDeepImpl(awc.getSuperBound(), oldAnno, newAnno, visited);
+                }
+            }
+        }
+    }
+
     private static Map<TypeElement, Boolean> isTypeAnnotationCache = new IdentityHashMap<>();
 
     public static boolean isTypeAnnotation(AnnotationMirror anno, Class<?> cls) {

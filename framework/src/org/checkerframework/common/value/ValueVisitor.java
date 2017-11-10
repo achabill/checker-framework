@@ -29,6 +29,8 @@ import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
+import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 
@@ -113,11 +115,22 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 new SimpleAnnotatedTypeScanner<Void, Void>() {
                     @Override
                     protected Void defaultAction(AnnotatedTypeMirror type, Void p) {
-                        if (type.hasAnnotation(IntRangeFromPositive.class)
-                                || type.hasAnnotation(IntRangeFromNonNegative.class)
-                                || type.hasAnnotation(IntRangeFromGTENegativeOne.class)) {
-                            type.replaceAnnotation(atypeFactory.UNKNOWNVAL);
-                        }
+                        System.out.println("type before replacement: " + type);
+                        AnnotationMirror irfnn =
+                                AnnotationBuilder.fromClass(
+                                        elements, IntRangeFromNonNegative.class);
+                        AnnotationMirror irfgten1 =
+                                AnnotationBuilder.fromClass(
+                                        elements, IntRangeFromGTENegativeOne.class);
+                        AnnotationMirror irfpos =
+                                AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
+
+                        AnnotatedTypes.replaceAnnotationDeep(type, irfnn, atypeFactory.UNKNOWNVAL);
+                        AnnotatedTypes.replaceAnnotationDeep(
+                                type, irfgten1, atypeFactory.UNKNOWNVAL);
+                        AnnotatedTypes.replaceAnnotationDeep(type, irfpos, atypeFactory.UNKNOWNVAL);
+
+                        System.out.println("type after replacement: " + type);
                         return null;
                     }
                 };
