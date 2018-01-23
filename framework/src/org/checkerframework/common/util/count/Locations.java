@@ -17,10 +17,12 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.source.SupportedOptions;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * An annotation processor for listing the potential locations of annotations. To invoke it, use
@@ -76,6 +78,13 @@ public class Locations extends SourceChecker {
             annotations = l.hasOption("annotations");
         }
 
+        private boolean isGuavaCaseStudy(Tree tree) {
+            Element e = TreeUtils.elementFromTree(tree);
+            String name = e.toString();
+            return (name.startsWith("com.google.common.primitives.")
+                    || name.startsWith("com.google.common.base."));
+        }
+
         @Override
         public Void visitAnnotation(AnnotationTree tree, Void p) {
             if (annotations) {
@@ -120,6 +129,9 @@ public class Locations extends SourceChecker {
 
         @Override
         public Void visitClass(ClassTree tree, Void p) {
+            if (!isGuavaCaseStudy(tree)) {
+                return p;
+            }
             if (locations) {
                 System.out.println("class");
                 if (tree.getExtendsClause() != null) {
